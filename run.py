@@ -13,7 +13,7 @@ from itertools import product
 
 from data import FetaDataset
 from unet import UNet3D
-from train import train_model
+from train import train_model_base, train_model_extrainput
 
 if __name__ == '__main__':
     # Experimental attributes and parameters:
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # configuration label
-    experimental_configs = ["base","extra_input","extra_task","extra_output","extra_step"]
+    experimental_configs = ["base", "extra_input","extra_task","extra_output","extra_step"]
     # Number of repetitions per configuration (rep number is used as random seed)
     repetitions=1
 
@@ -47,6 +47,9 @@ if __name__ == '__main__':
         if experimental_config == "base": # Traditional, baseline UNet, random init
             model = UNet3D(input_channels=1, output_channels=8)
             model = model.to(device)
+        elif experimental_config == "extra_input":
+            model = UNet3D(input_channels=2, output_channels=8)
+            model = model.to(device)
         else:
             continue
 
@@ -56,8 +59,15 @@ if __name__ == '__main__':
         # Setting up loss(es)
         if experimental_config == "base":
             loss_functions = [torch.nn.CrossEntropyLoss()]
+        elif experimental_config == "extra_input":
+            loss_functions = [torch.nn.CrossEntropyLoss()]
         else:
             continue
 
         # Train network
-        model, train_history = train_model(model, optimizer, loss_functions, data_loaders, device, loss_function_weights=[1],n_class=8)
+        if experimental_config == "base":
+            model, train_history = train_model_base(model, optimizer, loss_functions, data_loaders, device,n_class=8)
+        if experimental_config == "extra_input":
+            model, train_history = train_model_extrainput(model, optimizer, loss_functions, data_loaders, device,n_class=8)
+        else:
+            continue
