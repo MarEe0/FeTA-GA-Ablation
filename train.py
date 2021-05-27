@@ -193,5 +193,4 @@ def train_model(model, optimizer, loss_functions, data_loaders, device, loss_fun
 
     # Load best weights
     model.load_state_dict(best_model_wts)
-    return model, train_history, epoch_images
-"""
+    return model, train_history

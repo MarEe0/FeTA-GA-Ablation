@@ -3,6 +3,7 @@
 import os
 import csv
 
+import numpy as np
 import torch
 import nibabel as nib
 
@@ -36,12 +37,19 @@ class FetaDataset(torch.utils.data.Dataset):
         item_path = "sub-{:>03}".format(index + 1)
 
         # Loading niftis
-        image = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_T2w.nii.gz".format(index+1))).get_fdata()
-        labelmap = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_dseg.nii.gz".format(index+1))).get_fdata()
-
+        try:
+            image = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_T2w.nii.gz".format(index+1))).get_fdata()
+            labelmap = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_dseg.nii.gz".format(index+1))).get_fdata()
+        except :
+            image = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-irtk_T2w.nii.gz".format(index+1))).get_fdata()
+            labelmap = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-irtk_dseg.nii.gz".format(index+1))).get_fdata()
         # Applying transforms
         image, labelmap = self.apply_transforms(image, labelmap)
-        return image, labelmap, self.gestational_ages[index]
+
+        # unsqueezing image channel
+        image = np.expand_dims(image,0)
+
+        return {"image": image, "labelmap": labelmap, "ga":self.gestational_ages[index]}
 
     def apply_transforms(self, image, labelmap):
         if self.transform is not None:
@@ -52,6 +60,7 @@ class FetaDataset(torch.utils.data.Dataset):
 
 if __name__ == '__main__':
     set = FetaDataset(data_path)
+    print(len(set))
     print(set[0])
     import matplotlib.pyplot as plt
     plt.imshow(set[0][0][128],cmap="gray")
