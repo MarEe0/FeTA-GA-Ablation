@@ -36,8 +36,8 @@ class FetaDataset(torch.utils.data.Dataset):
         item_path = "sub-{:>03}".format(index + 1)
 
         # Loading niftis
-        image = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_T2w.nii.gz".format(index+1)))
-        labelmap = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_dseg.nii.gz".format(index+1)))
+        image = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_T2w.nii.gz".format(index+1))).get_fdata()
+        labelmap = nib.load(os.path.join(self.data_path, item_path, "anat","sub-{:>03}_rec-mial_dseg.nii.gz".format(index+1))).get_fdata()
 
         # Applying transforms
         image, labelmap = self.apply_transforms(image, labelmap)
@@ -53,3 +53,8 @@ class FetaDataset(torch.utils.data.Dataset):
 if __name__ == '__main__':
     set = FetaDataset(data_path)
     print(set[0])
+    import matplotlib.pyplot as plt
+    plt.imshow(set[0][0][128],cmap="gray")
+    plt.show()
+    plt.imshow(set[0][1][128])
+    plt.show()
