@@ -12,8 +12,8 @@ import tqdm
 from itertools import product
 
 from data import FetaDataset
-from unet import UNet3D
-from train import train_model_base, train_model_extrainput
+from unet import UNet3D, UNet3D_extratask
+from train import train_model_base, train_model_extrainput, train_model_extratask
 
 if __name__ == '__main__':
     # Experimental attributes and parameters:
@@ -50,6 +50,9 @@ if __name__ == '__main__':
         elif experimental_config == "extra_input":
             model = UNet3D(input_channels=2, output_channels=8)
             model = model.to(device)
+        elif experimental_config == "extra_task":
+            model = UNet3D_extratask(input_channels=1, output_channels=8)
+            model = model.to(device)
         else:
             continue
 
@@ -61,6 +64,8 @@ if __name__ == '__main__':
             loss_functions = [torch.nn.CrossEntropyLoss()]
         elif experimental_config == "extra_input":
             loss_functions = [torch.nn.CrossEntropyLoss()]
+        elif experimental_config == "extra_task":
+            loss_functions = [torch.nn.CrossEntropyLoss(), torch.nn.MSELoss()]
         else:
             continue
 
@@ -69,5 +74,7 @@ if __name__ == '__main__':
             model, train_history = train_model_base(model, optimizer, loss_functions, data_loaders, device,n_class=8)
         if experimental_config == "extra_input":
             model, train_history = train_model_extrainput(model, optimizer, loss_functions, data_loaders, device,n_class=8)
+        if experimental_config == "extra_task":
+            model, train_history = train_model_extratask(model, optimizer, loss_functions, data_loaders, device,n_class=8)
         else:
             continue
